@@ -61,6 +61,7 @@ const BLOCK_TEXT = {
   missing_rule: 'this playbook has no rule for this clause type',
   conflicting_rules: 'two playbook rules give different answers',
   unparsed: 'the rules could not read the key term from the wording',
+  ambiguous: 'the wording supports more than one reading of the key term',
 } as const;
 
 export function evaluateClause(clause: ClauseType, text: string, playbookId: string, engine: EngineVersion = 'v2-current'): Evaluation {
@@ -83,6 +84,7 @@ export function evaluateClause(clause: ClauseType, text: string, playbookId: str
   if (rules.length === 0) {
     return engine === 'v2-current' ? blocked('missing_rule', []) : pass([], 'Baseline: no rule found, treated as no objection.');
   }
+  if (extraction.ambiguous) return blocked('ambiguous', rules);
   if (!extraction.ok) {
     return engine === 'v2-current' ? blocked('unparsed', rules) : pass(rules, 'Baseline: term not read, treated as no objection.');
   }

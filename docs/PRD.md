@@ -20,7 +20,7 @@ When a counterparty marks up a contract, a reviewer goes clause by clause: accep
 | Side-by-side review | Your standard clause (from the selected playbook) next to the counterparty's proposed clause. The terms the rules read are highlighted in place. |
 | Deterministic rules | Four clause types: liability cap, indemnity, renewal and notice, governing law. Each result shows the rule ID and version, quoted guidance, acceptable deviation, approver, severity and a step-by-step trace. |
 | Severity | `within` (auto-accept eligible), `deviation` (accept with named approval), `escalate` (counter and escalate), `blocked` (abstain). |
-| Abstention | Missing rule, conflicting rules, or an unreadable key term all produce `blocked`, and auto-accept is disabled. |
+| Abstention | Missing rule, conflicting rules, an unreadable key term, or wording with more than one reading (a cap carve-out, mixed mutual and one-way indemnity, a second governing law) all produce `blocked`, and auto-accept is disabled. Malformed saved state is discarded rather than repaired. |
 | Human decision | Auto-accept (only when within), accept (needs a note unless within), reject and counter with the standard. Edit the wording and the rules re-run. |
 | Audit trail | Every decision, edit, revert, playbook or contract switch, export and reset is logged with time, actor, playbook and rule IDs. |
 | Exports | Review memo (Markdown) and eval report (Markdown and JSON). |

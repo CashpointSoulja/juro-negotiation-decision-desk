@@ -7,11 +7,12 @@ $ npm run typecheck
 exit code: 0
 
 $ npm test
- ✓ tests/unit/engine.test.ts (12 tests) 10ms
- ✓ tests/unit/evals.test.ts (6 tests) 10ms
- ✓ tests/unit/store.test.ts (6 tests) 9ms
- Test Files  3 passed (3)
-      Tests  24 passed (24)
+ ✓ tests/unit/engine.test.ts (12 tests)
+ ✓ tests/unit/evals.test.ts (6 tests)
+ ✓ tests/unit/store.test.ts (6 tests)
+ ✓ tests/unit/audit-regressions.test.ts (25 tests)
+ Test Files  4 passed (4)
+      Tests  49 passed (49)
 exit code: 0
 
 $ npm run evals
@@ -31,9 +32,9 @@ exit code: 0
 $ npm run build
 ✓ 39 modules transformed.
 dist/index.html 0.73 kB │ gzip: 0.43 kB
-dist/assets/index-gaRSJ96P.css 10.65 kB │ gzip: 2.94 kB
-dist/assets/index-DRZyn0hu.js 186.25 kB │ gzip: 58.90 kB
-✓ built in 9.07s
+dist/assets/index-W9OwQykd.css 10.68 kB │ gzip: 2.95 kB
+dist/assets/index-B9Hj1oje.js 190.84 kB │ gzip: 60.52 kB
+✓ built in 7.84s
 exit code: 0
 
 $ npm run test:e2e -- --reporter=list
@@ -54,8 +55,16 @@ Screenshots of the production build are in [`screenshots/`](screenshots/). Each 
 | Tablet 820px | [tablet-review](screenshots/tablet-review.png) | [tablet-blocked](screenshots/tablet-blocked.png) | [tablet-evals](screenshots/tablet-evals.png) |
 | Phone 390px | [phone-review](screenshots/phone-review.png) | [phone-blocked](screenshots/phone-blocked.png) | [phone-evals](screenshots/phone-evals.png) |
 
+### Fail-closed fixes from an external audit
+The audit found four cases where the rules gave a confident answer they shouldn't have. Each now has a regression test in `tests/unit/audit-regressions.test.ts`:
+- **Cap with a carve-out:** a 1x cap plus a 10x carve-out or super-cap was read as 1x and auto-accepted. More than one cap amount, a currency amount next to a multiple, or carve-out wording (other than the standard fraud and death or personal injury carve-out) now blocks as `ambiguous`.
+- **Non-mutual indemnity:** "each party" anywhere in the clause counted as mutual. Mutuality now needs a mutual indemnity obligation ("each party shall indemnify"). One-way wording ("the Customer shall indemnify") or "not mutual" makes it one-way, and mixed wording blocks.
+- **Conflicting second law:** only the first governing law was read. Two different laws or forums now block.
+- **Malformed saved state:** an unknown contract or playbook in browser storage crashed the memo. The full saved state is now validated on load and discarded if any field is wrong, with a visible notice. The memo refuses invalid state instead of throwing. A saved decision whose severity or rules differ from what the rules give now is shown as stale, so an old auto-accept is never reported as current.
+
 ### Issues found by inspection and fixed
 - **Phone eval table:** the 6-column table forced sideways scrolling at 390px. Below 640px it now stacks into labelled cards.
 - **Ambiguous accessible names:** "Playbook" matched both the section and the select. The selects now carry explicit `aria-label`s.
+- **Narrow toast on phones:** the new discarded-state notice wrapped into a narrow column at 390px. The toast now sizes to its text up to the screen width.
 - **Silent exports:** the export status was only visible to screen readers. It now shows as a visible toast that names the file and is still announced politely.
 - **Two eval downloads from one click:** some browsers block that. Markdown and JSON are now separate buttons.

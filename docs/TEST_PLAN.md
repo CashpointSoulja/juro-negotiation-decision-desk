@@ -5,8 +5,8 @@
 | Type safety | TypeScript (strict) | Engine, store and UI compile with no type errors | `npm run typecheck` |
 | Unit: extraction and rules | Vitest | Each clause type reads its key term. Word numbers and cap carve-outs are handled. Spans point at the matched text. | `npm test` |
 | Unit: playbook sensitivity | Vitest | The same wording gives different severities under Fernbrook, Quayside and Alder | `npm test` |
-| Unit: abstention | Vitest | Missing rule, conflicting rules and unreadable terms all block and disable auto-accept | `npm test` |
-| Unit: decisions and audit | Vitest | Auto-accept is refused when not within. Accepting a non-within clause needs a note. Edit re-evaluates and clears the prior decision. Reset. Corrupt storage is rejected. | `npm test` |
+| Unit: abstention | Vitest | Missing rule, conflicting rules, unreadable terms and ambiguous wording (cap carve-outs, mixed mutual/one-way indemnity, a second governing law) all block and disable auto-accept | `npm test` |
+| Unit: decisions and audit | Vitest | Auto-accept is refused when not within. Accepting a non-within clause needs a note. Edit re-evaluates and clears the prior decision. Reset. Corrupt or malformed saved state is discarded in full, the memo never crashes, and decisions made against a different result are marked stale. | `npm test` |
 | Unit: memo | Vitest | The memo carries citations, stale-decision markers and the disclaimer | `npm test` |
 | Eval suite | vite-node script | 8 fixtures, baseline vs current, FP/FN, regression status, release gate. Writes `docs/eval-report.md`. Exits non-zero if the gate fails. | `npm run evals` |
 | Production build | Vite | The app bundles for static hosting | `npm run build` |

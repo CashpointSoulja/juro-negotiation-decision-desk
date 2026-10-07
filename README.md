@@ -50,7 +50,7 @@ This is a static site. On Cloudflare Pages (free plan), use build command `npm r
 - Clause reading is deterministic pattern matching for four clause types. No language model is used anywhere, and it does not understand contracts in general.
 
 ## Known limits
-- Four clause types and a fixed set of phrasings. Unfamiliar wording is blocked, not guessed. That is intentional, but it means more manual review.
+- Four clause types and a fixed set of phrasings. Unfamiliar or ambiguous wording (a cap carve-out, mixed indemnity direction, a second governing law) is blocked, not guessed. That is intentional, but it means more manual review.
 - One known false positive (fixture F7): the rules don't model initial-term exceptions for renewal notice.
 - The eval set is 8 synthetic fixtures. It shows the method, not real-world accuracy.
 

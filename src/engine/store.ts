@@ -1,3 +1,5 @@
+import { CONTRACTS } from './fixtures';
+import { PLAYBOOKS } from './playbooks';
 import type { Evaluation, Severity } from './types';
 
 export type DecisionAction = 'accepted' | 'auto_accepted' | 'rejected';
@@ -96,11 +98,54 @@ export function reduce(state: DeskState, e: DeskEvent, now: string): DeskState {
 }
 
 export const STORAGE_KEY = 'juro-ndd-state-v1';
-export function load(raw: string | null): DeskState {
-  if (!raw) return initialState();
+
+const SEVERITIES = ['within', 'deviation', 'escalate', 'blocked'];
+const DECISION_ACTIONS = ['accepted', 'auto_accepted', 'rejected'];
+const AUDIT_ACTIONS = [...DECISION_ACTIONS, 'edited', 'edit_reverted', 'playbook_changed', 'contract_changed', 'reset', 'exported_memo', 'exported_eval'];
+const MAX_EDIT_LENGTH = 5000;
+const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
+const isStr = (x: unknown): x is string => typeof x === 'string';
+const isStrArr = (x: unknown) => Array.isArray(x) && x.every(isStr);
+const validKey = (k: string) => CONTRACTS.some((c) => c.clauses.some((cl) => clauseKey(c.id, cl.id) === k));
+const validPlaybook = (x: unknown) => PLAYBOOKS.some((p) => p.id === x);
+const validContract = (x: unknown) => CONTRACTS.some((c) => c.id === x);
+
+function validDecision(d: unknown): boolean {
+  return isObj(d) && DECISION_ACTIONS.includes(d.action as string) && isStr(d.note) && validPlaybook(d.playbookId)
+    && isStr(d.playbookVersion) && isStrArr(d.ruleIds) && SEVERITIES.includes(d.severity as string) && isStr(d.at);
+}
+function validAudit(a: unknown): boolean {
+  return isObj(a) && typeof a.id === 'number' && isStr(a.at) && isStr(a.actor) && AUDIT_ACTIONS.includes(a.action as string)
+    && isStr(a.contractId) && isStr(a.playbookId) && isStrArr(a.ruleIds) && isStr(a.detail)
+    && (a.clauseId === undefined || isStr(a.clauseId)) && (a.severity === undefined || SEVERITIES.includes(a.severity as string));
+}
+
+/** Strict shape check. Any unknown contract, playbook, clause key or malformed field fails the whole state. */
+export function isValidState(s: unknown): s is DeskState {
+  if (!isObj(s) || !validContract(s.contractId) || !validPlaybook(s.playbookId)) return false;
+  if (!isObj(s.edits) || !Object.entries(s.edits).every(([k, v]) => validKey(k) && isStr(v) && v.length <= MAX_EDIT_LENGTH)) return false;
+  if (!isObj(s.decisions) || !Object.entries(s.decisions).every(([k, v]) => validKey(k) && validDecision(v))) return false;
+  return Array.isArray(s.audit) && s.audit.every(validAudit);
+}
+
+export interface LoadResult { state: DeskState; discarded: boolean }
+/** Fails closed: anything that is not a fully valid saved state is discarded and the seeded state is used. */
+export function loadWithStatus(raw: string | null): LoadResult {
+  if (!raw) return { state: initialState(), discarded: false };
   try {
-    const s = JSON.parse(raw) as DeskState;
-    if (typeof s.contractId === 'string' && typeof s.playbookId === 'string' && Array.isArray(s.audit)) return s;
+    const s: unknown = JSON.parse(raw);
+    if (isValidState(s)) return { state: s, discarded: false };
   } catch { /* fall through */ }
-  return initialState();
+  return { state: initialState(), discarded: true };
+}
+export const load = (raw: string | null): DeskState => loadWithStatus(raw).state;
+
+export type DecisionStatus = 'none' | 'current' | 'stale_playbook' | 'stale_result';
+/** A decision only counts if it was made under this playbook against the same result the rules give now. */
+export function decisionStatus(d: Decision | undefined, ev: Evaluation): DecisionStatus {
+  if (!d) return 'none';
+  if (d.playbookId !== ev.playbookId) return 'stale_playbook';
+  const sameRules = d.ruleIds.join(',') === ev.citations.map((r) => r.id).join(',');
+  if (d.severity !== ev.severity || !sameRules || (d.action === 'auto_accepted' && !ev.autoAcceptEligible)) return 'stale_result';
+  return 'current';
 }

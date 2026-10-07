@@ -4,7 +4,7 @@ import { evalReportMarkdown, OUTCOME_TEXT, runComparison } from './engine/evals'
 import { CONTRACTS } from './engine/fixtures';
 import { reviewMemoMarkdown } from './engine/memo';
 import { getPlaybook, PLAYBOOKS } from './engine/playbooks';
-import { clauseKey, DecisionError, load, reduce, STORAGE_KEY, type DecisionAction, type DeskEvent, type DeskState } from './engine/store';
+import { clauseKey, decisionStatus, DecisionError, loadWithStatus, reduce, STORAGE_KEY, type DecisionAction, type DeskEvent, type DeskState } from './engine/store';
 import { CLAUSE_LABELS, SEVERITY_LABELS, type ContractClause, type Evaluation, type Span } from './engine/types';
 
 const REPO = 'https://github.com/CashpointSoulja/juro-negotiation-decision-desk';
@@ -35,13 +35,14 @@ const Pill = ({ sev }: { sev: Evaluation['severity'] }) => <span className={`pil
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
 export default function App() {
-  const [state, setState] = useState<DeskState>(() => load(localStorage.getItem(STORAGE_KEY)));
+  const [boot] = useState(() => loadWithStatus(localStorage.getItem(STORAGE_KEY)));
+  const [state, setState] = useState<DeskState>(boot.state);
   const [tab, setTab] = useState<Tab>(tabFromHash);
   const [selected, setSelected] = useState('c11');
   const [note, setNote] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(boot.discarded ? 'Saved workspace failed validation and was discarded. Showing seeded data.' : '');
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [state]);
   useEffect(() => { if (!status) return; const t = setTimeout(() => setStatus(''), 4000); return () => clearTimeout(t); }, [status]);
@@ -60,9 +61,10 @@ export default function App() {
   const ev = evals[clause.id];
   const key = clauseKey(contract.id, clause.id);
   const decision = state.decisions[key];
-  const stale = decision && decision.playbookId !== playbook.id;
+  const dStatus = decisionStatus(decision, ev);
+  const stale = dStatus === 'stale_playbook' || dStatus === 'stale_result';
   const standard = playbook.rules.find((r) => r.clause === clause.clause)?.standardClause;
-  const decidedCount = contract.clauses.filter((c) => { const d = state.decisions[clauseKey(contract.id, c.id)]; return d && d.playbookId === playbook.id; }).length;
+  const decidedCount = contract.clauses.filter((c) => { const d = state.decisions[clauseKey(contract.id, c.id)]; return decisionStatus(d, evals[c.id]) === 'current'; }).length;
   const comparison = useMemo(() => runComparison(), []);
 
   const decide = (action: DecisionAction) => {
@@ -132,7 +134,7 @@ export default function App() {
                     <button className={`clause-btn ${c.id === clause.id ? 'on' : ''}`} aria-current={c.id === clause.id ? 'true' : undefined} onClick={() => { setSelected(c.id); setEditing(null); setError(''); setNote(''); }}>
                       <span className="clause-name">{c.heading}</span>
                       <Pill sev={e.severity} />
-                      <span className="clause-dec">{d ? (d.playbookId === playbook.id ? `Decided: ${d.action.replace('_', '-')}` : 'Stale decision') : 'Pending'}{state.edits[clauseKey(contract.id, c.id)] ? ' · edited' : ''}</span>
+                      <span className="clause-dec">{d ? (decisionStatus(d, e) === 'current' ? `Decided: ${d.action.replace('_', '-')}` : 'Stale decision') : 'Pending'}{state.edits[clauseKey(contract.id, c.id)] ? ' · edited' : ''}</span>
                     </button>
                   </li>
                 );
@@ -190,7 +192,7 @@ export default function App() {
             <ol className="trace">{ev.trace.map((t, i) => <li key={i} className={t.outcome ? `t-${t.outcome}` : ''}>{t.ruleId && <code>{t.ruleId}</code>} {t.text}</li>)}</ol>
 
             <h3 className="label">Reviewer decision</h3>
-            {decision && <p className={`current-dec ${stale ? 'stale' : ''}`}>{stale ? `Stale: decided "${decision.action.replace('_', '-')}" under ${getPlaybook(decision.playbookId).name}. Re-review under ${playbook.name}.` : `Decided: ${decision.action.replace('_', '-')} at ${fmtTime(decision.at)}${decision.note ? `. Note: ${decision.note}` : ''}`}</p>}
+            {decision && <p className={`current-dec ${stale ? 'stale' : ''}`}>{dStatus === 'stale_playbook' ? `Stale: decided "${decision.action.replace('_', '-')}" under ${getPlaybook(decision.playbookId).name}. Re-review under ${playbook.name}.` : dStatus === 'stale_result' ? `Stale: decided "${decision.action.replace('_', '-')}" when the rules said ${SEVERITY_LABELS[decision.severity]}. Re-review.` : `Decided: ${decision.action.replace('_', '-')} at ${fmtTime(decision.at)}${decision.note ? `. Note: ${decision.note}` : ''}`}</p>}
             {ev.severity === 'blocked' && <p className="block-msg" role="alert">Auto-accept is disabled. The rules abstained, so a human must decide.</p>}
             <label className="block">Note {ev.severity !== 'within' ? '(required to accept)' : '(optional)'}
               <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder={ev.severity === 'within' ? 'Optional' : 'Approval reference or override reason'} />

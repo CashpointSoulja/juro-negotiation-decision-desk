@@ -1,7 +1,7 @@
 export type ClauseType = 'liability_cap' | 'indemnity' | 'renewal_notice' | 'jurisdiction';
 export type Severity = 'within' | 'deviation' | 'escalate' | 'blocked';
 export type EngineVersion = 'v1-baseline' | 'v2-current';
-export type BlockReason = 'missing_rule' | 'conflicting_rules' | 'unparsed';
+export type BlockReason = 'missing_rule' | 'conflicting_rules' | 'unparsed' | 'ambiguous';
 
 export interface LiabilityTerms { kind: 'liability_cap'; preferredMax: number; acceptableMax: number }
 export interface IndemnityTerms {
@@ -45,6 +45,8 @@ export interface Span { start: number; end: number; label: string }
 
 export interface Extraction {
   ok: boolean;
+  /** Set when the wording supports more than one reading of the key term. */
+  ambiguous?: boolean;
   values: Record<string, string | number | boolean>;
   spans: Span[];
   notes: string[];
