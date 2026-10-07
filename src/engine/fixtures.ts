@@ -1,0 +1,63 @@
+import type { Contract, EvalFixture } from './types';
+
+export const CONTRACTS: Contract[] = [
+  {
+    id: 'larkspur',
+    name: 'Larkspur Analytics: SaaS subscription',
+    counterparty: 'Larkspur Analytics Ltd (fictional)',
+    summary: 'Light-touch customer markup. Under Fernbrook, every clause is within playbook.',
+    clauses: [
+      { id: 'c11', clause: 'liability_cap', heading: '11. Limitation of liability',
+        proposed: "Each party's total aggregate liability arising out of or in connection with this Agreement shall not exceed 100% of the fees paid or payable in the twelve (12) months preceding the claim, save that neither party excludes liability for fraud." },
+      { id: 'c12', clause: 'indemnity', heading: '12. Indemnities',
+        proposed: 'Each party shall indemnify the other against third-party claims that its materials infringe intellectual property rights, subject to the limitation of liability in clause 11.' },
+      { id: 'c14', clause: 'renewal_notice', heading: '14. Term and renewal',
+        proposed: "This Agreement renews automatically for successive 12-month periods unless either party gives at least 60 days' written notice before the end of the current term." },
+      { id: 'c19', clause: 'jurisdiction', heading: '19. Governing law',
+        proposed: 'This Agreement and any dispute arising from it are governed by the laws of England and Wales.' },
+    ],
+  },
+  {
+    id: 'brightwater',
+    name: 'Brightwater Logistics: data platform order form',
+    counterparty: 'Brightwater Logistics plc (fictional)',
+    summary: 'Heavy procurement markup with an uncapped data indemnity, a higher cap, short notice and New York law.',
+    clauses: [
+      { id: 'c11', clause: 'liability_cap', heading: '11. Limitation of liability',
+        proposed: "Each party's total aggregate liability shall not exceed twice the total fees paid or payable in the twelve (12) months preceding the claim." },
+      { id: 'c12', clause: 'indemnity', heading: '12. Indemnities',
+        proposed: 'Each party shall indemnify the other for losses arising from its breach of clause 9 (Data Protection), including any personal data breach. Notwithstanding clause 11, this indemnity shall not be subject to the limitation of liability.' },
+      { id: 'c14', clause: 'renewal_notice', heading: '14. Term and renewal',
+        proposed: "This Agreement renews automatically for successive 12-month periods unless the Customer gives thirty (30) days' written notice." },
+      { id: 'c19', clause: 'jurisdiction', heading: '19. Governing law',
+        proposed: 'This Agreement is governed by the laws of the State of New York, and the parties submit to the courts of New York County.' },
+    ],
+  },
+];
+
+export const EVAL_FIXTURES: EvalFixture[] = [
+  { id: 'F1', clause: 'liability_cap', playbookId: 'fernbrook',
+    text: "Each party's total aggregate liability shall not exceed 100% of the fees paid or payable in the twelve (12) months preceding the claim.",
+    expected: 'within', rationale: 'Matches the Fernbrook standard cap exactly.' },
+  { id: 'F2', clause: 'liability_cap', playbookId: 'fernbrook',
+    text: "Each party's total aggregate liability shall not exceed twice the total fees paid or payable in the twelve (12) months preceding the claim.",
+    expected: 'deviation', rationale: '2x is above preferred 1x but within the 2x deviation that needs Commercial Counsel approval. Written in words, not digits.' },
+  { id: 'F3', clause: 'liability_cap', playbookId: 'alder',
+    text: "The Supplier's liability under this Agreement shall be unlimited.",
+    expected: 'escalate', rationale: 'Alder never accepts uncapped liability.' },
+  { id: 'F4', clause: 'indemnity', playbookId: 'quayside',
+    text: 'Each party shall indemnify the other against third-party claims that its materials infringe intellectual property rights, subject to the limitation of liability in clause 11.',
+    expected: 'within', rationale: 'Mutual IP indemnity inside the cap.' },
+  { id: 'F5', clause: 'indemnity', playbookId: 'fernbrook',
+    text: 'Each party shall indemnify the other for losses arising from its breach of clause 9 (Data Protection). Notwithstanding clause 11, this indemnity shall not be subject to the limitation of liability.',
+    expected: 'escalate', rationale: 'Takes a data indemnity outside the cap through a carve-out, without using the word "unlimited". Fernbrook only allows IP outside the cap.' },
+  { id: 'F6', clause: 'indemnity', playbookId: 'alder',
+    text: 'Each party shall indemnify the other for any personal data breach, and such indemnity shall be unlimited.',
+    expected: 'blocked', rationale: 'AH-IN-01 says never uncapped, while the AH-IN-07 data addendum allows it with DPO approval. The playbook conflicts, so a human must decide.' },
+  { id: 'F7', clause: 'renewal_notice', playbookId: 'fernbrook',
+    text: "Following an initial term of 36 months, this Agreement renews automatically for successive 12-month periods unless either party gives 30 days' written notice.",
+    expected: 'within', rationale: "Reviewer label: Fernbrook's commercial team treats 30 days as fine after a 36-month initial term. The rules do not model initial-term exceptions (known false positive)." },
+  { id: 'F8', clause: 'jurisdiction', playbookId: 'quayside',
+    text: 'This Agreement is governed by the laws of the State of New York.',
+    expected: 'blocked', rationale: 'Quayside has no governing-law rule. Silence is not approval.' },
+];
