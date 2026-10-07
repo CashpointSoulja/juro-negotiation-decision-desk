@@ -53,7 +53,8 @@ test('seed → checks → success → blocked → export', async ({ page }) => {
   await page.getByRole('link', { name: 'Evals' }).click();
   await expect(page.getByText('Release gate: PASS')).toBeVisible();
   const [report] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export eval report' }).click()]);
-  expect(report.suggestedFilename()).toMatch(/^eval-report\.(md|json)$/);
+  expect(report.suggestedFilename()).toBe('eval-report.md');
+  await expect(page.getByRole('status')).toContainText('eval-report.md');
 
   // Reset clears state.
   await page.getByRole('link', { name: 'Review' }).click();

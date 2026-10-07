@@ -1,0 +1,16 @@
+[
+  { "id": "seed", "say": "This is the Negotiation Decision Desk, an independent concept built on synthetic data. A reviewer picks a contract and one of three fictional playbooks. Here is Larkspur's markup, checked against Fernbrook's playbook.",
+    "sub": "This is the Negotiation Decision Desk, an independent concept built on synthetic data. A reviewer picks a contract and one of three fictional playbooks. Here is Larkspur's markup, checked against Fernbrook's playbook." },
+  { "id": "checks", "say": "Our standard clause sits on the left, their wording on the right. The rules highlight the exact term they read, cite the playbook rule and its version, show the acceptable deviation and the approver, and list every step.",
+    "sub": "Our standard clause sits on the left, their wording on the right. The rules highlight the exact term they read, cite the playbook rule and its version, show the acceptable deviation and the approver, and list every step." },
+  { "id": "success", "say": "Every Larkspur clause is within playbook, so auto-accept is available. One click, and the audit trail records the decision and the rule it relied on.",
+    "sub": "Every Larkspur clause is within playbook, so auto-accept is available. One click, and the audit trail records the decision and the rule it relied on." },
+  { "id": "switch", "say": "Now the heavier Brightwater markup. A two-times liability cap is an acceptable deviation for Fernbrook. Switch to Alder Health, and the same wording escalates.",
+    "sub": "Now the heavier Brightwater markup. A 2x liability cap is an acceptable deviation for Fernbrook. Switch to Alder Health, and the same wording escalates." },
+  { "id": "blocked", "say": "Alder's indemnity rules conflict. One says never uncapped, the data addendum allows it. So the desk abstains. Auto-accept is off, an override needs a written reason, and the reviewer rejects and counters.",
+    "sub": "Alder's indemnity rules conflict. One says never uncapped, the data addendum allows it. So the desk abstains. Auto-accept is off, an override needs a written reason, and the reviewer rejects and counters." },
+  { "id": "edit", "say": "Back on Fernbrook, editing the cap to one times the fees re-runs the rules. Deviation becomes within, and the edit is logged.",
+    "sub": "Back on Fernbrook, editing the cap to 1x the fees re-runs the rules. Deviation becomes within, and the edit is logged." },
+  { "id": "export", "say": "Export the review memo, with citations and the audit trail. Then the evals. Eight labelled fixtures, zero false negatives against three in the baseline, one known false positive, and a passing release gate.",
+    "sub": "Export the review memo, with citations and the audit trail. Then the evals: 8 labelled fixtures, 0 false negatives against 3 in the baseline, 1 known false positive, and a passing release gate." }
+]

@@ -44,10 +44,11 @@ export default function App() {
   const [status, setStatus] = useState('');
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [state]);
+  useEffect(() => { if (!status) return; const t = setTimeout(() => setStatus(''), 4000); return () => clearTimeout(t); }, [status]);
   useEffect(() => { const f = () => setTab(tabFromHash()); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f); }, []);
 
   const dispatch = (e: DeskEvent, msg?: string) => {
-    try { setState((s) => reduce(s, e, new Date().toISOString())); setError(''); if (msg) setStatus(msg); return true; }
+    try { const now = new Date().toISOString(); reduce(state, e, now); setState((s) => reduce(s, e, now)); setError(''); if (msg) setStatus(msg); return true; }
     catch (err) { if (err instanceof DecisionError) { setError(err.message); return false; } throw err; }
   };
 
@@ -74,12 +75,12 @@ export default function App() {
     dispatch({ type: 'edit', clauseId: clause.id, text: editing, before: ev, after }, `Edit saved. Re-evaluated as ${SEVERITY_LABELS[after.severity]}.`);
     setEditing(null);
   };
-  const exportMemo = () => { const now = new Date().toISOString(); download(`review-memo-${contract.id}-${playbook.id}.md`, reviewMemoMarkdown(state, now)); dispatch({ type: 'exported', what: 'memo' }, 'Review memo downloaded.'); };
-  const exportEval = () => {
+  const exportMemo = () => { const now = new Date().toISOString(); const name = `review-memo-${contract.id}-${playbook.id}.md`; download(name, reviewMemoMarkdown(state, now)); dispatch({ type: 'exported', what: 'memo' }, `Review memo downloaded (${name}).`); };
+  const exportEval = (format: 'md' | 'json') => {
     const now = new Date().toISOString();
-    download('eval-report.md', evalReportMarkdown(comparison, now));
-    download('eval-report.json', JSON.stringify({ generatedAt: now, gate: comparison.gate, baseline: comparison.baseline.metrics, current: comparison.current.metrics, rows: comparison.current.results.map((r, i) => ({ id: r.fixture.id, clause: r.fixture.clause, playbook: r.fixture.playbookId, expected: r.fixture.expected, baseline: comparison.baseline.results[i].predicted, baselineOutcome: comparison.baseline.results[i].binary, current: r.predicted, currentOutcome: r.binary, regression: comparison.rows[i].status, citations: r.evaluation.citations.map((c) => c.id) })) }, null, 2), 'application/json');
-    dispatch({ type: 'exported', what: 'eval' }, 'Eval report downloaded (Markdown and JSON).');
+    if (format === 'md') download('eval-report.md', evalReportMarkdown(comparison, now));
+    else download('eval-report.json', JSON.stringify({ generatedAt: now, gate: comparison.gate, baseline: comparison.baseline.metrics, current: comparison.current.metrics, rows: comparison.current.results.map((r, i) => ({ id: r.fixture.id, clause: r.fixture.clause, playbook: r.fixture.playbookId, expected: r.fixture.expected, baseline: comparison.baseline.results[i].predicted, baselineOutcome: comparison.baseline.results[i].binary, current: r.predicted, currentOutcome: r.binary, regression: comparison.rows[i].status, citations: r.evaluation.citations.map((c) => c.id) })) }, null, 2), 'application/json');
+    dispatch({ type: 'exported', what: 'eval' }, `Eval report downloaded (eval-report.${format}).`);
   };
   const reset = () => { if (confirm('Reset the workspace? This clears decisions, edits and the audit trail.')) { dispatch({ type: 'reset' }, 'Workspace reset to seeded data.'); setSelected('c11'); setEditing(null); setNote(''); } };
 
@@ -99,7 +100,7 @@ export default function App() {
       </header>
 
       <p className="notice" role="note">Synthetic contracts and playbooks. Deterministic rules, no language model. Not legal advice, and the rules can be wrong: a reviewer owns every decision.</p>
-      <div className="sr-only" role="status" aria-live="polite">{status}</div>
+      <div className={`toast ${status ? 'show' : ''}`} role="status" aria-live="polite">{status}</div>
 
       {tab === 'review' && (
         <main className="review">
@@ -226,7 +227,7 @@ export default function App() {
                 <div className="metric" key={label}><span className="m-label">{label}</span><span className="m-val">{f(comparison.current.metrics)}</span><span className="m-base">v1 baseline: {f(comparison.baseline.metrics)}</span></div>
               ))}
             </div>
-            <button className="btn" onClick={exportEval}>Export eval report</button>
+            <div className="row"><button className="btn" onClick={() => exportEval('md')}>Export eval report</button><button className="btn ghost" onClick={() => exportEval('json')}>Download JSON</button></div>
           </section>
           <section className="card table-wrap" aria-label="Per-fixture results">
             <table>

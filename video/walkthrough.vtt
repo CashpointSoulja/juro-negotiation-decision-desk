@@ -1,0 +1,50 @@
+WEBVTT
+
+00:00:00.802 --> 00:00:05.698
+This is the Negotiation Decision Desk, an independent concept built on synthetic data.
+
+00:00:05.698 --> 00:00:09.398
+A reviewer picks a contract and one of three fictional playbooks.
+
+00:00:09.398 --> 00:00:13.042
+Here is Larkspur's markup, checked against Fernbrook's playbook.
+
+00:00:13.743 --> 00:00:17.631
+Our standard clause sits on the left, their wording on the right.
+
+00:00:17.631 --> 00:00:26.843
+The rules highlight the exact term they read, cite the playbook rule and its version, show the acceptable deviation and the approver, and list every step.
+
+00:00:27.543 --> 00:00:31.800
+Every Larkspur clause is within playbook, so auto-accept is available.
+
+00:00:31.800 --> 00:00:36.543
+One click, and the audit trail records the decision and the rule it relied on.
+
+00:00:37.245 --> 00:00:43.100
+Now the heavier Brightwater markup. A 2x liability cap is an acceptable deviation for Fernbrook.
+
+00:00:43.100 --> 00:00:46.455
+Switch to Alder Health, and the same wording escalates.
+
+00:00:47.154 --> 00:00:53.020
+Alder's indemnity rules conflict. One says never uncapped, the data addendum allows it.
+
+00:00:53.020 --> 00:00:54.436
+So the desk abstains.
+
+00:00:54.436 --> 00:01:00.774
+Auto-accept is off, an override needs a written reason, and the reviewer rejects and counters.
+
+00:01:01.475 --> 00:01:05.776
+Back on Fernbrook, editing the cap to 1x the fees re-runs the rules.
+
+00:01:05.776 --> 00:01:08.875
+Deviation becomes within, and the edit is logged.
+
+00:01:09.783 --> 00:01:14.931
+Export the review memo, with citations and the audit trail. Then the evals:
+
+00:01:14.931 --> 00:01:22.963
+8 labelled fixtures, 0 false negatives against 3 in the baseline, 1 known false positive, and a passing release gate.
+

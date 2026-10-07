@@ -156,3 +156,6 @@ thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; co
   tbody td { border: 0; padding: 4px 0; display: grid; grid-template-columns: 112px minmax(0,1fr); gap: 8px; }
   tbody td::before { content: attr(data-label); font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 }
+
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 16px); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 14px; font-size: 15px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: calc(100vw - 32px); z-index: 10; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
