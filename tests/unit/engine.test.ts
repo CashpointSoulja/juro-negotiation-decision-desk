@@ -31,7 +31,7 @@ describe('extraction', () => {
     expect(ex.values.mutual).toBe(true);
   });
   it('records spans that point at the matched text', () => {
-    const text = "renews automatically unless the Customer gives thirty (30) days' written notice.";
+    const text = "renews automatically for successive 12-month periods unless the Customer gives thirty (30) days' written notice.";
     const ex = extract('renewal_notice', text);
     const span = ex.spans.find((s) => s.label === 'notice period')!;
     expect(text.slice(span.start, span.end)).toMatch(/^thirty \(30\) days/);

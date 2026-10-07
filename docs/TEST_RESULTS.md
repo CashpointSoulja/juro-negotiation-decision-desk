@@ -10,9 +10,9 @@ $ npm test
  ✓ tests/unit/engine.test.ts (12 tests)
  ✓ tests/unit/evals.test.ts (6 tests)
  ✓ tests/unit/store.test.ts (6 tests)
- ✓ tests/unit/audit-regressions.test.ts (25 tests)
+ ✓ tests/unit/audit-regressions.test.ts (31 tests)
  Test Files  4 passed (4)
-      Tests  49 passed (49)
+      Tests  55 passed (55)
 exit code: 0
 
 $ npm run evals
@@ -33,8 +33,8 @@ $ npm run build
 ✓ 39 modules transformed.
 dist/index.html 0.73 kB │ gzip: 0.43 kB
 dist/assets/index-W9OwQykd.css 10.68 kB │ gzip: 2.95 kB
-dist/assets/index-B9Hj1oje.js 190.84 kB │ gzip: 60.52 kB
-✓ built in 7.84s
+dist/assets/index-BOiHUHCB.js 191.43 kB │ gzip: 60.74 kB
+✓ built in 7.85s
 exit code: 0
 
 $ npm run test:e2e -- --reporter=list
@@ -56,11 +56,14 @@ Screenshots of the production build are in [`screenshots/`](screenshots/). Each 
 | Phone 390px | [phone-review](screenshots/phone-review.png) | [phone-blocked](screenshots/phone-blocked.png) | [phone-evals](screenshots/phone-evals.png) |
 
 ### Fail-closed fixes from an external audit
-The audit found four cases where the rules gave a confident answer they shouldn't have. Each now has a regression test in `tests/unit/audit-regressions.test.ts`:
+The audit found six cases where the rules gave a confident answer they shouldn't have. Each now has a regression test in `tests/unit/audit-regressions.test.ts`:
 - **Cap with a carve-out:** a 1x cap plus a 10x carve-out or super-cap was read as 1x and auto-accepted. More than one cap amount, a currency amount next to a multiple, or carve-out wording (other than the standard fraud and death or personal injury carve-out) now blocks as `ambiguous`.
 - **Non-mutual indemnity:** "each party" anywhere in the clause counted as mutual. Mutuality now needs a mutual indemnity obligation ("each party shall indemnify"). One-way wording ("the Customer shall indemnify") or "not mutual" makes it one-way, and mixed wording blocks.
 - **Conflicting second law:** only the first governing law was read. Two different laws or forums now block.
 - **Malformed saved state:** an unknown contract or playbook in browser storage crashed the memo. The full saved state is now validated on load and discarded if any field is wrong, with a visible notice. The memo refuses invalid state instead of throwing. A saved decision whose severity or rules differ from what the rules give now is shown as stale, so an old auto-accept is never reported as current.
+
+- **Unbounded renewal term:** "successive perpetual terms" with 60 days' notice auto-accepted because a missing term length skipped the maximum-term check. Perpetual, indefinite or evergreen wording, or auto-renewal with no readable term length, now blocks as `ambiguous`.
+- **Memo table injection:** a reviewer note containing a pipe or line break split the memo's decision table. Table cells now escape pipes and backslashes and fold line breaks, and audit and trace lines stay on one line.
 
 ### Issues found by inspection and fixed
 - **Phone eval table:** the 6-column table forced sideways scrolling at 390px. Below 640px it now stacks into labelled cards.

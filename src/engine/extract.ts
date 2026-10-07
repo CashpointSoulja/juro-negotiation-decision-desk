@@ -109,6 +109,11 @@ export function extract(clause: ClauseType, text: string, engine: EngineVersion 
       const n = num(term[1]);
       if (n !== undefined) values.renewalMonths = /year/i.test(term[2]) ? n * 12 : n;
     }
+    if (v2) {
+      const open = /\b(perpetual|indefinite(?:ly)?|evergreen|unlimited|successive\s+terms?\s+of\s+(?:the\s+)?(?:same|equal)\s+(?:length|duration))\b/i.exec(text);
+      if (open) return ambiguous(values, spans, `Renewal term "${open[0]}" has no fixed length, so the maximum renewal term cannot be checked.`);
+      if (values.autoRenew && values.renewalMonths === undefined) return ambiguous(values, spans, 'Clause renews automatically but no renewal term length was read, so the maximum renewal term cannot be checked.');
+    }
     const noticeRe = v2
       ? /(\d+|fourteen|thirty|sixty|ninety)\s*(?:\(\d+\)\s*)?days['’]?\s+(?:prior\s+)?(?:written\s+)?notice/i
       : /(\d+)\s*days['’]?\s+(?:prior\s+)?(?:written\s+)?notice/i;

@@ -109,3 +109,35 @@ describe('decisions recorded against a different result are stale', () => {
     expect(md).toMatch(/auto-accepted \(stale: decided when the rules said .+; re-review\)/);
   });
 });
+
+describe('renewal term must be bounded', () => {
+  const at60 = (term: string) => `This Agreement renews automatically for ${term} unless either party gives at least 60 days' written notice before the end of the current term.`;
+  for (const term of ['successive perpetual terms', 'successive terms of the same length', 'an indefinite period', 'successive renewal periods']) {
+    it(`"${term}" with 60 days' notice is blocked, not auto-accepted`, () => {
+      for (const pb of ['fernbrook', 'quayside', 'alder']) blockedAmbiguous(evaluateClause('renewal_notice', at60(term), pb));
+    });
+  }
+  it('a stated 12-month renewal term still auto-accepts under Fernbrook', () => {
+    const ev = evaluateClause('renewal_notice', at60('successive 12-month periods'), 'fernbrook');
+    expect(ev.severity).toBe('within');
+    expect(ev.autoAcceptEligible).toBe(true);
+  });
+});
+
+describe('memo table cells are escaped', () => {
+  it('a reviewer note with pipes and newlines stays inside one table row', () => {
+    let s = reduce(initialState(), { type: 'select_contract', contractId: 'brightwater' }, T);
+    const capClause = CONTRACTS.find((c) => c.id === 'brightwater')!.clauses.find((c) => c.clause === 'liability_cap')!;
+    const ev = evaluateClause('liability_cap', capClause.proposed, 'fernbrook');
+    s = reduce(s, { type: 'decide', clauseId: capClause.id, action: 'rejected', note: 'Counter | at 1x\n| fake | row |\r\nsee CC-1 \\ ok', evaluation: ev, playbookVersion: 'v4' }, T);
+    const md = reviewMemoMarkdown(s, T);
+    const rows = md.split('\n').filter((l) => l.startsWith('| 11. Limitation'));
+    expect(rows).toHaveLength(1);
+    expect(md).not.toMatch(/^\| fake/m);
+    const cells = rows[0].split(/(?<!\\)\|/).slice(1, -1);
+    expect(cells).toHaveLength(4);
+    expect(rows[0]).toContain('Counter \\| at 1x \\| fake \\| row \\| see CC-1 \\\\ ok');
+    expect(md.split('\n').filter((l) => l.includes('rejected') && l.startsWith('- ')).every((l) => !l.includes('\n'))).toBe(true);
+    expect(md).not.toMatch(/^\| row/m);
+  });
+});
