@@ -41,6 +41,9 @@ npm run build        # production build to dist/
 npm run test:e2e     # Playwright flow and overflow checks (run `npx playwright install chromium` first)
 ```
 
+## Deploy
+This is a static site. On Cloudflare Pages (free plan), use build command `npm run build`, output directory `dist`, and Node 20 or newer. It has no server, secrets or environment variables. The walkthrough video ships with the site at `/video/walkthrough.mp4`.
+
 ## What is synthetic or simulated
 - All contracts, counterparties, playbooks, rule IDs, approvers and eval labels are fictional.
 - There is one actor, "Reviewer (you)". No accounts, no integrations, no server. State lives in your browser's localStorage. Reset clears it.
