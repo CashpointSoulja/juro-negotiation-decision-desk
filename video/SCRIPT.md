@@ -2,7 +2,7 @@
 
 - **File:** `public/video/walkthrough.mp4` (1366x934, H.264 and AAC, about 86 seconds). Subtitles are burned in. A separate track is in `video/walkthrough.vtt`.
 - **Footage:** the production build (`npm run build`, served by `vite preview`) in Chromium at a 1366x854 desktop viewport. Every interaction is a real click, select or keystroke in the running app, with a drawn pointer so you can see where each click lands. No slides, zooms or mock-ups.
-- **Voice:** an offline text-to-speech voice (Piper `en_GB-alba-medium`, an open-source model). No voice cloning, no face.
+- **Voice:** a stock offline text-to-speech voice. No voice cloning, no face.
 - **Sync:** each narration segment starts at the moment its actions begin in the recording. `record.mjs` writes those offsets, and `build.py` uses them to place the audio and subtitles.
 
 ## Rebuild
@@ -10,7 +10,7 @@
 npm run build && npm run preview &                     # serves dist on :4173
 Xvfb :99 -screen 0 1366x1000x24 &                      # virtual display
 # generate video/out/<segment>.wav and durations.json from segments.json (any TTS)
-DISPLAY=:99 node video/record.mjs                      # drives the UI, captures with ffmpeg x11grab
+DISPLAY=:99 node video/record.mjs                      # drives the UI and captures the screen
 python3 video/build.py                                 # mixes the voice, adds subtitles, writes public/video/walkthrough.mp4
 ```
 
