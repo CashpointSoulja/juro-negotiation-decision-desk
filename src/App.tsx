@@ -105,12 +105,12 @@ export default function App() {
         <main className="review">
           <section className="controls card" aria-label="Contract and playbook">
             <label>Contract
-              <select value={contract.id} onChange={(e) => { dispatch({ type: 'select_contract', contractId: e.target.value }); setSelected('c11'); setEditing(null); }}>
+              <select aria-label="Contract" value={contract.id} onChange={(e) => { dispatch({ type: 'select_contract', contractId: e.target.value }); setSelected('c11'); setEditing(null); }}>
                 {CONTRACTS.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </label>
             <label>Playbook
-              <select value={playbook.id} onChange={(e) => { dispatch({ type: 'select_playbook', playbookId: e.target.value }, `Playbook switched. Recommendations re-evaluated.`); setEditing(null); }}>
+              <select aria-label="Playbook" value={playbook.id} onChange={(e) => { dispatch({ type: 'select_playbook', playbookId: e.target.value }, `Playbook switched. Recommendations re-evaluated.`); setEditing(null); }}>
                 {PLAYBOOKS.map((p) => <option key={p.id} value={p.id}>{p.name} {p.version} · {p.stance}</option>)}
               </select>
             </label>
@@ -238,11 +238,11 @@ export default function App() {
                   return (
                     <tr key={r.fixture.id}>
                       <th scope="row">{r.fixture.id}</th>
-                      <td>{CLAUSE_LABELS[r.fixture.clause]}<br /><span className="muted">{getPlaybook(r.fixture.playbookId).name}</span></td>
-                      <td><Pill sev={r.fixture.expected} /></td>
-                      <td><Pill sev={b.predicted} /><br /><span className={`oc oc-${b.binary}`}>{OUTCOME_TEXT[b.binary]}</span></td>
-                      <td><Pill sev={r.predicted} /><br /><span className={`oc oc-${r.binary}`}>{OUTCOME_TEXT[r.binary]}</span></td>
-                      <td><span className={`reg reg-${comparison.rows[i].status}`}>{comparison.rows[i].status}</span></td>
+                      <td data-label="Clause · playbook"><span className="cell">{CLAUSE_LABELS[r.fixture.clause]}<span className="muted">{getPlaybook(r.fixture.playbookId).name}</span></span></td>
+                      <td data-label="Reviewer label"><span className="cell"><Pill sev={r.fixture.expected} /></span></td>
+                      <td data-label="v1 baseline"><span className="cell"><Pill sev={b.predicted} /><span className={`oc oc-${b.binary}`}>{OUTCOME_TEXT[b.binary]}</span></span></td>
+                      <td data-label="v2 current"><span className="cell"><Pill sev={r.predicted} /><span className={`oc oc-${r.binary}`}>{OUTCOME_TEXT[r.binary]}</span></span></td>
+                      <td data-label="Regression"><span className="cell"><span className={`reg reg-${comparison.rows[i].status}`}>{comparison.rows[i].status}</span></span></td>
                     </tr>
                   );
                 })}
